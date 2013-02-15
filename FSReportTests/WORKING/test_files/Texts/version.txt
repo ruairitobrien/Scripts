@@ -1,0 +1,12 @@
+
+fsReport - report component of the EMC fsUtils filesystem analysis utilities
+
+	13 Oct 2006 - Initial release
+	11 Apr 2007 - Support for .dtl files created by 'diff' version of fsScan
+	10 Jun 2007 - Support for Linux NFS .dtl files
+	04 Nov 2007 - Support for 'filetype' reports and 'attrs' select criteria
+	19 Apr 2008 - Support for 'type is/isnot file/dir' select criteria
+	15 Feb 2009 - Added [classes] support
+	23 Mar 2011 - Fixed bug in screen output size.  Now in MB as indicated.
+	18 Aug 2011 - Bug fix for missing drive letter when UNC path is imported in Workbench.
+	19 Oct 2011 - Bug fix for missing drive letter when a mounted network drive is scanned in Workbench.
