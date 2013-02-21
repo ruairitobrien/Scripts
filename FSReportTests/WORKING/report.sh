@@ -5,12 +5,6 @@
 # Script to iterate through all dtl files in the DTL_FILE_DIR and create seperate reports for each config file in the CONFIGS_DIR
 # The reports will be stored in the REPORTS_DIR in the format REPORTS_DIR/DTL_FILE_NAME/CONFIG_FILE_NAME
 
-DTL_FILE_DIR=dtl_files
-CONFIGS_DIR=configs
-REPORTS_DIR=reports
-FS_REPORT_APP=fsReport
-
-
 # User should be sudo
 if [[ $UID != 0 ]]; then
     echo "Please run this script with sudo:"
@@ -18,29 +12,45 @@ if [[ $UID != 0 ]]; then
     exit 1
 fi
 
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/definitions.sh
+
+
+
 # Compile fsReport code and move the executable to the root test folder.
 function CompileAndCopyFSReport {
-	if [ -f $REPORTS_DIR$/FS_REPORT_APP ]; then
-		rm $REPORTS_DIR/$FS_REPORT_APP;
+	if [ -f $FSREPORT_APP ]; then
+		rm $FSREPORT_APP;
 	fi
 
 	# Compile fsReportLinux
 	echo "Compiling fsReport...";
-	pushd ./ff-5/src/fsReportLinux;
+	pushd $CODE_DIR/src/fsReportLinux;
 	make clean;
 	make; 
 
 	popd;
 	echo "Compilation complete";
-	cp ./ff-5/src/fsReportLinux/$FS_REPORT_APP $REPORTS_DIR;
-	chmod 777 $REPORTS_DIR/$FS_REPORT_APP;
+	cp $CODE_DIR/src/fsReportLinux/fsReport $FSREPORT_APP;
+	chmod 777 $FSREPORT_APP;
+
+	if [ -f "$FSREPORT_APP" ]; 
+		then
+
+		echo "fsReport file copied to working dir";
+	
+		else
+		
+		echo "Error! fsReport file was not copied to working directory";
+		exit 1;
+	fi
 }
 
 # Iterate through all DTL files in the dtl_files folder and call GenerateReports to create reports based on the current DTL file.
 function IterateDTLFiles {
 echo "Iterating through dtl files";
 
-for f in $DTL_FILE_DIR/*
+# Look for DTL files placed in the DTL inputs folder
+for f in $DTL_FILE_INPUT_DIR/*
 do
 GenerateReports ${f##*/}
 done
@@ -52,7 +62,7 @@ echo "Finished iterating through dtl files";
 function GenerateReports {
 echo "Starting report generation for $1";
 
-for f in $CONFIGS_DIR/*
+for f in $REPORT_CONFIGS_DIR/*
 do
 CreateAndStoreReport ${f##*/} $1
 done
@@ -70,14 +80,14 @@ fi
 # Make the folder to store the new report
 mkdir -p "$REPORTS_DIR/$2/$1";
 
-if [ -f $REPORTS_DIR/$FS_REPORT_APP ]
+if [ -f $FSREPORT_APP ]
 then
-    chmod 777 $REPORTS_DIR/$FS_REPORT_APP;
+    chmod 777 $FSREPORT_APP;
 
 	echo "Creating report on $2 using $1";
-	./$REPORTS_DIR/$FS_REPORT_APP -dtl "$DTL_FILE_DIR/$2" -cfg "$CONFIGS_DIR/$1" -rdir $REPORTS_DIR/$2/$1;
+	$FSREPORT_APP -dtl "$DTL_FILE_INPUT_DIR/$2" -cfg "$REPORT_CONFIGS_DIR/$1" -rdir $REPORTS_DIR/$2/$1;
 else
-	echo "An error has occured. Please ensure that $FS_REPORT_APP exists in the reports directory.";
+	echo "An error has occured. Please ensure that $FSREPORT_APP exists in the working directory.";
 fi
 
 }
@@ -85,20 +95,21 @@ fi
 # Allow this script to prep any required folders.
 function CreateFolders {
 if [ ! -d "$REPORTS_DIR" ]; then 
-	mkdir "$REPORTS_DIR";
+	mkdir -p "$REPORTS_DIR";
 fi
 
-if [ ! -d "$CONFIGS_DIR" ]; then 
-	mkdir "$CONFIGS_DIR";
+if [ ! -d "$REPORT_CONFIGS_DIR" ]; then 
+	mkdir -p "$REPORT_CONFIGS_DIR";
 fi
 
-if [ ! -d "$DTL_FILE_DIR" ]; then 
-	mkdir "$DTL_FILE_DIR";
+if [ ! -d "$DTL_FILE_INPUT_DIR" ]; then 
+	mkdir -p "$DTL_FILE_INPUT_DIR";
 fi
 }
 
 CompileAndCopyFSReport
 CreateFolders
 IterateDTLFiles
+chmod 777 -R $REPORTS_DIR
 
 exit $?
