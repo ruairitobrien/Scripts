@@ -22,36 +22,37 @@ function SetUpDirectories() {
 function CopyGeneratedDTLFiles {
 	read -p "Would you like to copy all DTL files from previous scans (if they exist) in the the DTL input folder for report generation?(y/n)";
 	if [ $REPLY == "y" ] || [ $REPLY == "Y" ]; then
-		rsync -aq $OUTPUT_DIR/$DTL_FILE_DIR/ $DTL_FILE_INPUT_DIR;
+		cp $OUTPUT_DIR/$DTL_FILE_DIR/* $DTL_FILE_INPUT_DIR;
 	fi
 }
  
 
-echo "This script should be modified with values specific to this current test e.g. the FSMA JIRA Number."
-echo "Current values: Jira number = $FSMA_JIRA_NUM."
-
-read -p "Would you like to continue?(y/n)"
-[ $REPLY == "y" ] || [ $REPLY == "N" ] || exit
-
-# User should be sudo
-if [[ $UID != 0 ]]; then
-    echo "Please run this script with sudo:"
-    echo "sudo $0 $*"
-    exit 1
-fi
+echo "WARNING... If your not running this script with elevated permissons i.e. sudo, su, root whatever.. it will blow up in your face."
 
 
 SetUpDirectories
+chmod -R 777 WORKING
 
-read -p "Run developer test script i.e. compile and run fsscan outputting results to OUTPUTS directory?(y/n)"
+echo 'Select action:'
+echo '1 - Scans'
+echo '2 - Reports'
+read -p '(1/2)?'
+
+if [ $REPLY == "1" ]; 
+then
+	$WORKING_DIR/developer_test.sh 
+	CopyGeneratedDTLFiles
+	read -p "Run fsReport test script i.e. compile and run fsReport outputting results to OUTPUTS directory?(y/n)"
 	if [ $REPLY == "y" ] || [ $REPLY == "Y" ]; then
-		sudo $WORKING_DIR/developer_test.sh 
-		CopyGeneratedDTLFiles
+		$WORKING_DIR/report.sh		
 	fi
 
-read -p "Run fsReport test script i.e. compile and run fsReport outputting results to OUTPUTS directory?(y/n)"
-	if [ $REPLY == "y" ] || [ $REPLY == "Y" ]; then
-		sudo $WORKING_DIR/report.sh		
-	fi
+elif [ $REPLY == "2" ];
+then
+	$WORKING_DIR/report.sh
+else	
+ echo 'Wrong input... exiting because I was too lazy to implement an input loop.'	
+fi
+
 
 exit $?
