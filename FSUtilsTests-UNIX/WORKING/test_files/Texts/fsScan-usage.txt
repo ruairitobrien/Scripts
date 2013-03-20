@@ -1,0 +1,64 @@
+
+fsScan is the data collection program for the fsReport application.
+
+Usage: fsScan [<scan-root>] [-cfg <config-file>] [-dtl <detail-file>] [-f]
+			  [-ads] [-touch | -recall] [-nsacl] [-threads n]
+			  [-log <log-file>] [-err <err-file>] [-debug <debug-level>]
+
+where:
+	<scan-root>
+		specifies the root directory at which to begin the file scan.  If this
+		paramter is not present, the -cfg <configuration-file> option must be
+		used to specify an scan root.
+	-cfg <config-file>
+		specifies the configuration filename.  The syntax of this file is
+		described below.
+	-dtl <detail-file>
+		specifies the file to receive the details of the scan.  This file is
+		then used as input to fsReport to produce detail file-level reports.
+		If the option is not present, its default is fsScan.dtl.
+	-f
+		unconditionally deletes an existing .dtl file with the same name.
+	-ads
+		if present, this option causes the scan to include information about
+		Alternate Data Streams attached to files.  This will increase the time
+		required for the scan.  This option is incompatible with -touch and
+		-recall.
+	-touch | -recall  -- USE WITH CAUTION, READ THE DOCUMENTATION
+		if present, these options cause the program to recall the archived
+		files pointed to by DHSM stubs.  The two options recall the files in
+		different ways.  Before choosing either one, please review the fsScan
+		documentation.
+	-nsacl
+		bypasses the collection of the SACL portion of file permissions.  This
+		option must be present if the account running the program does not have
+		the 'Manage auditing and security log' local access right.	
+	-threads n
+		specifies the number of file processing threads.  The defaualt is 32.
+	-log <log-file> and -err <err-file>
+		specify files to receive the execution log and any error messages.
+		If they are not specified, the defaults at stdout and stderr.
+	-debug <debug-level>
+		Integer between 1 and 4.  Specifies level of debug information.
+
+Configuration file
+------------------
+This file is used to specify include/exclude files and directories for the
+scan root.  It must have a single [ScanRoot] section which contains a path
+parameter if the root scan path was not specified on the command line and,
+optionally, one or more include/exclude directory or file parameters.
+Its form is
+
+[ScanRoot]
+path		 = <LocalDrivePath-or-UNC-path>
+includedirs  = <dir-template>
+excludedirs  = <dir-template>
+includefiles = <file-template>
+excludefiles = <file-template>
+
+The <dir-template> and <file-template> values may contain wildcard characters
+with the following meanings:
+
+	? - any single character not including a path separator
+	* - zero or more characters not including a path separator
+	~ - zero or more characters

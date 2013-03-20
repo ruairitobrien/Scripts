@@ -1,0 +1,61 @@
+#!/bin/ksh
+
+# Author: Ruairí O Brien
+# 20/02/2013
+# A bunch of values to be used in multiple scripts. 
+
+FSMA_JIRA_NUM=192
+
+# The current directory of this script
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# The root directory for all scripts
+DIR="$( pwd )" 
+
+# Where any DTL File, Configurations and Src Code should go
+INPUTS_DIR=$DIR/INPUTS
+# This is the directory where the fsUtils source code should go 
+# i.e. the directory src should be directly beneath this one
+CODE_DIR=$INPUTS_DIR/code
+# This is where configuration files i.e. *.cfg should go.
+# Only used for reporting.
+CONFIGS_DIR=$INPUTS_DIR/configs
+
+SCAN_CONFIGS_DIR=$CONFIGS_DIR/scan
+REPORT_CONFIGS_DIR=$CONFIGS_DIR/report
+
+# This is where DTL files that will have reports generated against 
+# them should go.
+DTL_FILE_INPUT_DIR=$INPUTS_DIR/dtl_files
+#Where all the work happens, i.e. executables and scripts are stored.
+WORKING_DIR=$DIR/WORKING
+
+# Where any usable outputs from the test scripts will go
+OUTPUT_DIR=$DIR/OUTPUTS
+# Where generated reports will go
+REPORTS_DIR=$OUTPUT_DIR/reports
+# Where text fiel outputs for scan tests will go
+TEST_OUTPUT_DIR=$OUTPUT_DIR/test_outputs
+
+# Location of test files to be scanned
+ROOT_TEST_SCAN_LOCATION=FSMA_TARGET_SCAN_FOLDER
+# Files generated to extend on test scan
+GENERATED_TEST_FILES=$ROOT_TEST_SCAN_LOCATION/gen
+#Test files used when generating sym links and hard links
+TEST_FILES_DIR=$WORKING_DIR/test_files
+# Name of folder containing DTL files
+DTL_FILE_DIR=dtl_files
+# Prefix for name of DTL files passed as parameter to fsscan
+DTL_FILE=$OUTPUT_DIR/$DTL_FILE_DIR/fsScan
+# Scan tag passed as paramete to fsscan
+SCAN_TAG=FSMA_RPT
+# location and name of fsscan app
+FSSCAN_APP=$WORKING_DIR/fsscan
+# location and name of fsReport app
+FSREPORT_APP=$WORKING_DIR/fsReport
+
+# Shared folder stuff
+NET_LOC_OF_SHARE=//gsshare.isus.emc.com/gssd
+MOUNTED_SHARE=/mnt/gsshare
+TEST_FILES_LOCATION=tools/FSMA/$ROOT_TEST_SCAN_LOCATION 
+

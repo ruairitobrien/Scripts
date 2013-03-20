@@ -1,0 +1,38 @@
+
+fsReport is the report generation partner application of fsScan
+
+Usage: fsReport [-dtl <detail-file>] [-rdir <report-directory]
+ 				[-cfg <configuration-file>] [-q "<query-select>"]
+				[-l <list-file>] [-e <err-file>]
+				[-cat all | -cat <category1> -cat <category2> ...]
+where:
+
+	-dtl <detail-file>
+		specifies the name of a .dtl file created by fsScan.  If this option
+		is not present, the default is 'fScan.dtl'
+	-cfg <configuration-file>
+		specifies the name of a configuration file which contains the report
+		definitions and parameters.  If this option is not present, a simple
+		summary of the contents of the detail file is displayed.  For the format
+		and contents of the configuration file, see the product documentation.
+	-q "<query-select>"
+		specifies criteria to select entries from the .dtl file for an ad-hoc
+		report that does not require creating a configuration file.  For the
+		syntax of <query-select>, refer to the fsTools documentation.  This
+		string must be enclosed in double-quotes.
+	-rdir <report-directory>
+		specifies a target directory for reports defined in the configuration
+		file.  If the last component in the path does not exist, it will be
+		created.  If present, this option overrides the ReportDirectory option
+		in the configuration file.
+	-l <list-file>  -and-  -e <err-file>
+		specify the output list file and error file.  If these options are not
+		present, the defaults are stdout and stderr, respectively.
+	-cat all | -cat <category>
+		when present, this option specifies which report categories are selected
+		in the configuration file.  The option '-cat all' selects all categories.
+		For a description of report category specification in the configuration
+		file, see the product documentation.
+
+
+		
