@@ -6,7 +6,13 @@
 
 function Invoke-FsReport([string]$fsReport, [string]$dtlFile, [string]$configFile, [string]$reportDirectory)
 {
-		$command = "$fsReport -dtl $dtlFile -cfg $configFile -rdir $reportDirectory"	
+        If (Test-Path $reportDirectory){
+			Remove-Item -Recurse -Force $reportDirectory            
+		}
+        New-Item -Name $reportDirectory -ItemType folder
+		
+        $command = "$fsReport -dtl $dtlFile -cfg $configFile -rdir $reportDirectory"	
 		
 		Invoke-Expression $command
 }
+
