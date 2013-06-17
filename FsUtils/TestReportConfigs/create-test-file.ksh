@@ -1,4 +1,5 @@
-#!/usr/bin/ksh
+#!/bin/ksh
+
 
 rm -rf testFiles
 mkdir testFiles
