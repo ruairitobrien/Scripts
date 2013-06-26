@@ -19,6 +19,9 @@ $newFsReports = "$scriptPath\Working\New\fsReport.exe"
 $newFsScan = "$scriptPath\Working\New\fsScan.exe"
 $stableFsReports = "$scriptPath\Working\Stable\fsReport.exe"
 $stableFsScan = "$scriptPath\Working\Stable\fsScan.exe"
+$newFsDiff = "$scriptPath\Working\New\fsDiff.exe"
+$stableFsDiff  = "$scriptPath\Working\Stable\fsDiff.exe"
+
 
 #
 # Input locations. All config files and DTL files are inputs that will be used by fsReports
@@ -90,24 +93,123 @@ $scanWithIncludesConfig = "$scanConfigDirectory\include_dirs.cfg"
 $scanWithExcludesConfig = "$scanConfigDirectory\exclude_dirs_files.cfg"
 $scanWithIncludesAndExcludesConfig = "$scanConfigDirectory\exclude_dirs_include_files.cfg"
 
+#
+# Batch file locations used by this script
+#
+[string]$modifyFileSystemScript
+[string]$revertFileSystemScript
+$modifyFileSystemScript ="$scriptPath\modifyFileSystem.bat"
+$revertFileSystemScript = "$scriptPath\revertFileSystem.bat"
+
+$sDtl0 = $stableDtlFilesDirectory + "\" + $scanOfUnalteredTestFiles
+$sDtl1 = $stableDtlFilesDirectory + "\" + $scanOfAlteredTestFiles
+$sDtl2 = $stableDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithIncludes
+$sDtl3 = $stableDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithExcludes
+$sDtl4 = $stableDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithIncludesAndExcludes
+$nDtl0 = $newDtlFilesDirectory + "\" + $scanOfUnalteredTestFiles
+$nDtl1 = $newDtlFilesDirectory + "\" + $scanOfAlteredTestFiles
+$nDtl2 = $newDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithIncludes
+$nDtl3 = $newDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithExcludes
+$nDtl4 = $newDtlFilesDirectory + "\" + $scanOfAlteredTestFilesWithIncludesAndExcludes
+
+
+$stableDtls = $sDtl0, $sDtl1, $sDtl2, $sDtl3, $sDtl4
+$newDtls = $nDtl0, $nDtl1, $nDtl2, $nDtl3, $nDtl4
 
 Import-Module "$scriptPath\Report.psm1" -Verbose
 Import-Module "$scriptPath\Scan.psm1" -Verbose
+Import-Module "$scriptPath\Diff.psm1" -Verbose
+
+
+function Prepare-Workspace()
+{
+}
+
+function Modify-Filesystem()
+{
+    Invoke-Expression $modifyFileSystemScript
+}
+
+function Revert-Filesystem()
+{
+    Invoke-Expression $revertFileSystemScript
+}
+
+function Run-Scans()
+{
+    # Run stable version of fscan on the target file system
+    Invoke-FsScan $stableFsScan $stableDtls[0] $scanConfiguration 
+
+    #	Run new version of fscan on the target file system    
+    Invoke-FsScan $newFsScan $newDtls[0] $scanConfiguration
+
+    #   Modify test file system with extra mountpoints, junctionpoints, hard links, symlinks: directories, symlinks: files
+    Modify-Filesystem
+
+    #	Run stable version of fscan on the modified target file system     
+    Start-FsScan $stableFsScan $stableDtls[1] $scanConfiguration
+
+    #	Run stable version of fscan on the modified target file system with include filter    
+    Start-FsScan $stableFsScan $stableDtls[2] $scanWithIncludesConfig
+
+    #	Run stable version of fscan on the modified target file system with exclude filter    
+    Start-FsScan $stableFsScan $stableDtls[3] $scanWithExcludesConfig
+
+    #	Run stable version of fscan on the modified target file system with include/exclude filter    
+    Start-FsScan $stableFsScan $stableDtls[4] $scanWithIncludesAndExcludesConfig
+
+    #	Run new version of fscan on the modified target file system     
+    Start-FsScan $newFsScan $newDtls[1] $scanConfiguration 
+
+    #	Run new version of fscan on the modified target file system with include filter    
+    Start-FsScan $newFsScan $newDtls[2] $scanWithIncludesConfig
+
+    #	Run new version of fscan on the modified target file system with exclude filter    
+    Start-FsScan $newFsScan $newDtls[3] $scanWithExcludesConfig
+
+    #	Run new version of fscan on the modified target file system with include/exclude filter    
+    Start-FsScan $newFsScan $newDtls[4] $scanWithIncludesAndExcludesConfig 
+
+    # 	Revert test file system to original state
+    Revert-Filesystem
+}
+
+function Run-Diffs([string]$fsDiffToUse)
+{
+    For ($i=0; $i -lt $dtls.Length/2 ; $i++)  
+    {
+        Start-FsDiff $fsDiff $stableDtls[$i] $newDtls[$i]                        
+    }
+}
+
+function Run-Reports([string]$fsReportsToUse, [string[]]$dtls)
+{
+    For ($i=0; $i -lt $dtls.Length/2 ; $i++)  
+    {
+        Start-FsDiff $fsDiff $stableDtls[$i] $newDtls[$i]                        
+    }
+}
+
 
 # Test Steps
 
+# Make sure everything is in the right place
+Prepare-Workspace
 
-
-# 	Revert test file system to original state
+# Run scans to generate DTL files that will be used to test correctness of programs under test
+Run-Scans
 
 #	Run stable version of fsdiff on the dtls produced from scans on the original and modified file system (no filters)
+Run-Diffs $stableFsDiff
 
 #	Run stable version of fsreport on all dtls produced by the stable fsScan using all configurations included in a specified configuration directory
+Run-FsReports $stableFsReports $stableDtls
 
 #	Run new version of fsdiff on the dtls produced from scans on the original and modified file system (no filters)
+Run-Diffs $newFsDiff
 
 #	Run new version of fsreport on all dtls produced by the new fsScan using all configurations included in a specified configuration directory
-
+Run-FsReports $newFsReports $newDtls
 
 # 	Verify Outputs 
 
