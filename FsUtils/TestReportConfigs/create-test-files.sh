@@ -1,18 +1,10 @@
 #!/bin/bash
 
-FSSCAN_LOCATION=./fsscan
-FSREPORTS_LOCATION=./fsReport
-
 TEST_FILE_CREATE_LOCATION=testFiles
-TARGET_DTL_LOCATION=testFiles.dtl
-TARGET_REPORTS_LOCATION=reports
-CONFIG_FILE=NFS_ed2.cfg
-
 
 # Remove old test files
 rm -rf $TEST_FILE_CREATE_LOCATION
 mkdir $TEST_FILE_CREATE_LOCATION
-rm -rf $TARGET_REPORTS_LOCATION
 rm $TARGET_DTL_LOCATION
 
 
@@ -101,8 +93,3 @@ createAccessedAndModifiedWithin31And90DaysAgo
 createAccessedAndModifiedWithin3And6MonthsAgo
 createAccessedAndModifiedWithin6And12MonthsAgo
 createAccessedAndModifiedOver12MonthsAgo
-
-	
-$FSSCAN_LOCATION $TEST_FILE_CREATE_LOCATION -dtl $TARGET_DTL_LOCATION
-
-$FSREPORTS_LOCATION -dtl $TARGET_DTL_LOCATION -cfg $CONFIG_FILE -rdir $TARGET_REPORTS_LOCATION
